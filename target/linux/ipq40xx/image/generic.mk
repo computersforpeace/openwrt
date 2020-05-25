@@ -528,6 +528,19 @@ define Device/glinet_gl-s1300
 endef
 TARGET_DEVICES += glinet_gl-s1300
 
+define Device/google_wifi
+	DEVICE_VENDOR := Google
+	DEVICE_MODEL := WiFi (Gale)
+	SOC := qcom-ipq4019
+	KERNEL_SUFFIX := -fit-zImage.itb.vboot
+	KERNEL = kernel-bin | fit none $$(DTS_DIR)/$$(DEVICE_DTS).dtb | cros-vboot
+	KERNEL_NAME := zImage
+	IMAGES += factory.bin
+	IMAGE/factory.bin := cros-image
+	DEVICE_PACKAGES := partx-utils mkf2fs e2fsprogs
+endef
+TARGET_DEVICES += google_wifi
+
 define Device/linksys_ea6350v3
 	# The Linksys EA6350v3 has a uboot bootloader that does not
 	# support either booting lzma kernel images nor booting UBI

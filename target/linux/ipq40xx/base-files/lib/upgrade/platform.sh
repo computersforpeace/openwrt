@@ -40,6 +40,19 @@ askey_do_upgrade() {
 	nand_do_upgrade "$1"
 }
 
+vboot_do_upgrade() {
+	local tar_file="$1"
+
+	local board_dir=$(tar tf $tar_file | grep -m 1 '^sysupgrade-.*/$')
+	board_dir=${board_dir%/}
+
+	echo "Preparing to flash \"${board_dir}\" to /dev/mmcblk0p{1,2}"
+	ask_bool 0 "Abort" && exit 1
+
+	tar Oxf "${tar_file}" "${board_dir}/kernel" | dd of=/dev/mmcblk0p2 bs=1M
+	tar Oxf "${tar_file}" "${board_dir}/root" | dd of=/dev/mmcblk0p3 bs=1M
+}
+
 zyxel_do_upgrade() {
 	local tar_file="$1"
 
@@ -101,6 +114,9 @@ platform_do_upgrade() {
 		;;
 	compex,wpj419)
 		nand_do_upgrade "$1"
+		;;
+	google,wifi)
+		vboot_do_upgrade "$1"
 		;;
 	linksys,ea6350v3 |\
 	linksys,ea8300 |\
