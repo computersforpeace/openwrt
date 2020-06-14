@@ -46,6 +46,26 @@ define Build/append-rootfshdr
 	dd if=$@.new bs=64 count=1 >> $(IMAGE_KERNEL)
 endef
 
+# Generate 3 partitions, but two of them ("boot" and "kernel") currently use
+# the same size configuration.
+define Build/cros-image
+	$(SCRIPT_DIR)/gen_image_vboot.sh \
+		  $@ \
+		  $(CONFIG_TARGET_KERNEL_PARTSIZE) \
+		  $(CONFIG_TARGET_KERNEL_PARTSIZE) $(IMAGE_KERNEL) \
+		  $(CONFIG_TARGET_ROOTFS_PARTSIZE) $(IMAGE_ROOTFS)
+endef
+
+# NB: Chrome OS bootloaders replace the '%U' in command lines with the UUID of
+# the kernel partition it chooses to boot from. This gives a flexible way to
+# consistently build and sign kernels that always use the subsequent
+# (PARTNROFF=1) partition as their rootfs.
+define Build/cros-vboot
+	$(STAGING_DIR_HOST)/bin/cros-vbutil \
+		-k $@ -c "root=PARTUUID=%U/PARTNROFF=1" -o $@.new
+	@mv $@.new $@
+endef
+
 define Build/mkmylofw_32m
 	$(eval device_id=$(word 1,$(1)))
 	$(eval revision=$(word 2,$(1)))
